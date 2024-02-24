@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
+  base: '/geocode-demo',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
