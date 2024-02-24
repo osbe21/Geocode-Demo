@@ -105,7 +105,7 @@ function spawnRedPoint() {
 
         point.position.set(...position);
 
-        scalePointUp(point).then(() => {});
+        scalePointUp(point);
     }, 2000);
 }
 
