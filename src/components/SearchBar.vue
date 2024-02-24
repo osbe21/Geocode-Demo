@@ -30,7 +30,7 @@ async function typeWord(word) {
 }
 
 function autoTypeLocations() {
-    sleep(3000).then(async () => {
+    sleep(2000).then(async () => {
         await typeWord(placeholderLocations[locationIdx % placeholderLocations.length]);
         locationIdx++;
         autoTypeLocations();
@@ -43,24 +43,23 @@ autoTypeLocations();
 
 
 <template>
-
-<div id="container">
-    <input v-model="location" type="text" class="source-serif" id="search" autocomplete="off" spellcheck="false" :placeholder="placeholder">
-    <button @click="$emit('search', location)" id="go-btn"><img src="/plane.png" alt="Go"></button>
-</div>
-
+    <span>
+        <form class="container">
+            <input v-model="location" type="text" class="source-serif" id="search" autocomplete="off" spellcheck="false" :placeholder="placeholder">
+            <button @click.prevent="$emit('search', location)" type="submit" id="go-btn"><img src="/plane.png" alt="Go"></button>
+        </form>
+    </span>
 </template>
 
-<style scope>
+<style scoped>
 
-#container {
+.container {
     display: flex;
     align-items: stretch;
     gap: 30px;
 
     width: min-content;
     height: 50px;
-    margin: 0 auto;
 }
 
 #search {

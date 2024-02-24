@@ -1,9 +1,16 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
+
 const props = defineProps(['latitude', 'longitude']);
+
+let shouldSpin = true;
+
+watch(() => props.latitude, () => spawnRedPoint());
+watch(() => props.latitude, () => shouldSpin = false, { once: true });
+
 
 const sceneParent = ref(null);
 
@@ -14,8 +21,12 @@ camera.position.z = 60;
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize( 800, 800 );
 
+const clock = new THREE.Clock();
+
 const light = new THREE.DirectionalLight(0xffffff, 6);
 light.position.set(1, 1, 1);
+
+scene.add(new THREE.AmbientLight(0x006600));
 
 onMounted(() => sceneParent.value.appendChild(renderer.domElement));
 
@@ -33,6 +44,9 @@ loader.load('/earth.glb', (gltf) => {
 
         obj.material = new THREE.MeshPhongMaterial({ map: obj.material.map, alphaToCoverage: true });
     });
+
+    earth.children[0].material.specular = new THREE.Color(0x0a0a0a);
+    earth.children[0].material.shininess = 150;
 
     const atmosphereGeometry = new THREE.SphereGeometry(26, 40, 40);
 
@@ -76,24 +90,56 @@ loader.load('/earth.glb', (gltf) => {
 });
 
 
+function spawnRedPoint() {
+    setTimeout(() => {
+        const pointGeometry = new THREE.SphereGeometry(1);
+        const pointMaterial = new THREE.MeshBasicMaterial({ color: 0xcc0000 });
+
+        const point = new THREE.Mesh(pointGeometry, pointMaterial);
+        point.scale.set(0, 0, 0);
+
+        earth.add(point);
+
+        const position = new THREE.Vector3();
+        position.setFromSphericalCoords(25, (90 - props.latitude) * Math.PI / 180, props.longitude * Math.PI / 180);
+
+        point.position.set(...position);
+
+        scalePointUp(point).then(() => {});
+    }, 2000);
+}
+
+function scalePointUp(point) {
+    if (point.scale.x >= .3) return;
+    
+    const dt = 0.016;
+    const scale = point.scale.x + dt * 0.06;
+    point.scale.set(scale, scale, scale);
+    setTimeout(() => scalePointUp(point), dt);
+}
+
+
+const lerp = (a, b, t) => (1 - t) * a + t * b;
+
 function animate() {
 	requestAnimationFrame(animate);
 
-    const lerp = (a, b, t) => (1 - t) * a + t * b;
-
     if (earth) {
-    
-        //earth.rotation.y -= 0.001;
-
         const lightPos = new THREE.Vector3(); 
         light.getWorldPosition(lightPos);
         const lightDir = earth.position.clone();
         lightDir.sub(lightPos);
             
-        atmosphere.material.uniforms.lightDir = { value: lightDir };
+        atmosphere.material.uniforms.lightDir.value = lightDir;
 
-        earth.rotation.y = lerp(earth.rotation.y, -props.longitude * Math.PI / 180, 0.03);
-        earth.rotation.x = lerp(earth.rotation.x, props.latitude * Math.PI / 180, 0.03);
+        const dt = clock.getDelta();
+
+        if (shouldSpin) {
+            earth.rotation.y -= 0.2 * dt;
+        } else {
+            earth.rotation.y = lerp(earth.rotation.y, -props.longitude * Math.PI / 180, dt);
+            earth.rotation.x = lerp(earth.rotation.x, props.latitude * Math.PI / 180, dt);
+        }
     }
 
 	renderer.render( scene, camera );

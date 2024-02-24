@@ -4,19 +4,18 @@
 
 
 <template>
-    <h1 id="header" class="dm-serif">
-        <slot>Text</slot>
-    </h1>
+    <span>
+        <h1 class="header dm-serif">
+            <slot>Text</slot>
+        </h1>
+    </span>
 </template>
 
 
 <style scoped>
 
-#header {
+.header {
     position: relative;
-
-    margin: auto;
-    margin-top: 50px;
 
     width: max-content;
 

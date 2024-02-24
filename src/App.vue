@@ -7,16 +7,26 @@ import Globe from './components/Globe.vue';
 const latitude = ref(0);
 const longitude = ref(0);
 
+const headerTop = ref('5%');
+const searchBarTop = ref('35%');
+const globeBottom = ref('-70%');
+
 const apiKey = "65d7c6b3db86b436975163sjiafbb62";
 
 function search(location) {
 	const data = fetch(`https://geocode.maps.co/search?q=${location}&api_key=${apiKey}`)
 		.then(data => data.json())
-		.then(data => data[0])
 		.then(data => {
-			latitude.value = Number(data.lat);
-			longitude.value = Number(data.lon) + 360 * (Math.floor(longitude.value / 360) + 1);
-			document.querySelector("#globe-layer").style.bottom = "-20%";
+			if (data.length) {
+				headerTop.value = "-100%";
+				searchBarTop.value = "5%";
+				globeBottom.value = "-20%";
+				
+				latitude.value = Number(data[0].lat);
+				longitude.value = Number(data[0].lon) + 360 * (Math.floor(longitude.value / 360) + 1);
+			} else {
+				alert("Location not found");
+			}
 		})
 		.catch((error) => console.log(error));
 }
@@ -36,12 +46,20 @@ function search(location) {
 
 #header {
 	position: absolute;
-	width: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	top: v-bind('headerTop');
+
+	transition: top 2s;
 }
 
 #search-bar {
 	position: absolute;
-	width: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	top: v-bind('searchBarTop');
+	
+	transition: top 2s;
 }
 
 #globe-layer {
@@ -53,7 +71,7 @@ function search(location) {
 
 	left: 50%;
 	transform: translateX(-50%);
-	bottom: -70%;
+	bottom: v-bind('globeBottom');
 
 	display: flex;
 	justify-content: center;
