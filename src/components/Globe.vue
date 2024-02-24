@@ -35,7 +35,7 @@ let earth;
 let atmosphere;
 
 const loader = new GLTFLoader();
-loader.load('/earth.glb', (gltf) => {
+loader.load('/geocode-demo/earth.glb', (gltf) => {
     earth = gltf.scene;
     earth.rotation.y = -0.5;
 
